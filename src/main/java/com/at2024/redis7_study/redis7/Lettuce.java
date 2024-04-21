@@ -4,7 +4,6 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.protocol.RedisCommand;
 
 /**
  * @author lyh
@@ -40,6 +39,8 @@ public class Lettuce {
         //list
         command.lpush("week","Mon", "Tur", "Wen", "Thr", "Fri", "Sta", "Sun");
         command.lindex("week", 0);
+
+        //
 
 
         //========================业务end=========================//
