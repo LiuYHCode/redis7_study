@@ -1,5 +1,6 @@
 package com.at2024.redis7_study.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -22,7 +23,8 @@ import java.time.format.DateTimeFormatter;
 @EnableSwagger2
 public class SwaggerConfig {
 
-    private final Boolean enable = true;
+    @Value("${spring.swagger2.enabled}")
+    private Boolean enabled;
 
     /**
      * 创建API应用
@@ -36,7 +38,7 @@ public class SwaggerConfig {
     public Docket createRestApi() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
-                .enable(enable)
+                .enable(enabled)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("com.at2024.redis7_study"))
                 .paths(PathSelectors.any())
@@ -55,7 +57,7 @@ public class SwaggerConfig {
                         + DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now()))
                 .description("springBoot+Redis整合")
                 .version("1.0")
-                .termsOfServiceUrl("https://blog.csdn.net/2201_75960169")
+                .termsOfServiceUrl("https://blog.csdn.net/weixin_54408360")
                 .build();
     }
 
