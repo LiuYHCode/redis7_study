@@ -146,6 +146,11 @@
             <artifactId>commons-collections4</artifactId>
             <version>4.3</version>
         </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.4</version>
+        </dependency>
 
         <!--redisTemplate序列化使用-->
         <dependency>
