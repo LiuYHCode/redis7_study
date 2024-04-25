@@ -18,6 +18,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>2.6.13</spring-boot.version>
         <jackson.version>2.13.3</jackson.version>
+        <mysql.version>8.0.11</mysql.version>
     </properties>
     <dependencies>
         <dependency>
@@ -125,11 +126,19 @@
             <version>2.1.2</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.springframework</groupId>-->
-<!--            <artifactId>spring-tx</artifactId>-->
-<!--            <version>2.5.6</version>-->
-<!--        </dependency>-->
+        <!--事务切面-->
+        <dependency>
+            <groupId>org.aspectj</groupId >
+            <artifactId>aspectjweaver</artifactId >
+            <version>1.9.4</version >
+        </dependency>
+
+        <!--mysql数据库连接-->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
 
         <!--Utils-->
         <dependency>

@@ -1,6 +1,5 @@
 package com.at2024.redis7_study;
 
-import org.mybatis.spring.annotation.MapperScan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -9,7 +8,7 @@ import org.springframework.context.annotation.ImportResource;
 
 @SpringBootApplication
 //@MapperScan(basePackages = {"com.at2024.**.dao"})
-//@ImportResource("classpath:/springconf/applicationContext*.xml")
+@ImportResource("classpath:/springconf/transaction.xml")
 public class Redis7StudyApplication {
 
     private static Logger LOGGER = LoggerFactory.getLogger(Redis7StudyApplication.class);
@@ -21,7 +20,6 @@ public class Redis7StudyApplication {
         } catch (Exception e) {
             LOGGER.error("Redis7学习项目启动失败",e);
         }
-
     }
 
 }
