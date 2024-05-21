@@ -17,7 +17,7 @@ import java.util.UUID;
 public class RedisCanalClientExample {
 
     public static final Integer _60SECONDS = 60;
-    public static final String REDIS_IP_ADDR = "192.168.56.106";
+    public static final String REDIS_IP_ADDR = "192.168.0.132";
 
     public static void printEntry(List<CanalEntry.Entry> entrys) {
         for (CanalEntry.Entry entry : entrys) {
@@ -55,7 +55,8 @@ public class RedisCanalClientExample {
 
     public static void main(String[] args) {
         // 创建链接
-        CanalConnector connector = CanalConnectors.newSingleConnector(new InetSocketAddress(AddressUtils.getHostIp(),
+        //获取连接的ip，端口是分配给canal一个端口，不和其它占用就行，目标源，username和password不填写就默认去instance去读取，填写了就是写死。
+        CanalConnector connector = CanalConnectors.newSingleConnector(new InetSocketAddress(REDIS_IP_ADDR,
                 11111), "example", "", "");
         int batchSize = 1000;
         int emptyCount = 0;
