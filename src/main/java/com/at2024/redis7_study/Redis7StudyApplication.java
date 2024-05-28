@@ -5,9 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ImportResource;
+import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
-//@MapperScan(basePackages = {"com.at2024.**.dao"})
+@MapperScan(basePackages = {"com.at2024.**.mapper"})
 @ImportResource("classpath:/springconf/transaction.xml")
 public class Redis7StudyApplication {
 
