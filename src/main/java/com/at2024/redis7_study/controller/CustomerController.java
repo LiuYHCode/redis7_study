@@ -34,6 +34,7 @@ public class CustomerController {
     public void addCustomer() {
         for (int i = 0; i < 2; i++) {
             Customer customer = new Customer();
+            customer.setId(new Random().nextInt(10000) + 1);
             customer.setCname("customer" + i);
             customer.setAge(new Random().nextInt(30) + 1);
             customer.setPhone("138" + new Random().nextInt(100000000));

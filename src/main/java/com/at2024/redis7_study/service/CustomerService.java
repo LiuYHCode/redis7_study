@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.*;
+
 /**
  * @author lyh
  * @date 2024/5/28  23:27
@@ -21,6 +23,8 @@ public class CustomerService {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
     public void addCustomer(Customer customer) {
         int i = customerMapper.insertCustomerForSelective(customer);
 
@@ -29,7 +33,7 @@ public class CustomerService {
             Customer result = customerMapper.selectCustomerById(customer.getId());
             //redis缓存key
             String key = CACHE_KEY_CUSTOMER + result.getId();
-            redisTemplate.opsForValue().set(key, result);
+            redisTemplate.opsForHash().put("customer:", key, result);
         }
     }
 
@@ -37,14 +41,48 @@ public class CustomerService {
         Customer customer = null;
         //redis缓存key
         String key = CACHE_KEY_CUSTOMER + id;
-        //先从redis中取
-        customer = (Customer) redisTemplate.opsForValue().get(key);
+        //先从redis中取，查看redis中是否存在
+        customer = (Customer) redisTemplate.opsForHash().get("customer:", key);
+
+        //redis不存在，去mysql中查找
         if (null == customer) {
-            //redis缓存中没有，从mysql中取
-            customer = customerMapper.selectCustomerById(id);
-            //mysql取到数据，写进redis
-            redisTemplate.opsForValue().set(key, customer);
+            // 双端加锁策略
+            synchronized (CustomerService.class) {
+                customer = (Customer) redisTemplate.opsForHash().get("customer:", key);
+                if (null == customer) {
+                    //mysql中取
+                    customer = customerMapper.selectCustomerById(id);
+                    if (null == customer) {
+                        //mysql中没有数据，设置一个空值到redis，避免缓存穿透
+                        addCustomerWithDelayedDeletion(key, customer);
+                    } else {
+                        //mysql取到数据，写进redis
+                        redisTemplate.opsForHash().put("customer:", key, customer);
+                    }
+                }
+            }
         }
         return customer;
+    }
+
+    public void addCustomerWithDelayedDeletion(String key, Customer customer) {
+        // 创建一个新的线程来处理延迟删除
+        Future<?> deletionFuture = executorService.submit(() -> {
+            try {
+                // 添加键值对到Redis
+                redisTemplate.opsForHash().put("customer:", key, new Customer());
+                log.info("新增一个customer到redis缓存，key:{}", key);
+
+                // 等待一分钟
+                Thread.sleep(60 * 1000);
+                log.info("Deleting customer with ID {} from cache after 1 minute", key);
+
+                // 删除键值对
+                redisTemplate.opsForHash().delete("customer:", key);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Interrupted while waiting for deletion", e);
+            }
+        });
     }
 }

@@ -60,7 +60,7 @@
     <select id="selectCustomerById" resultType="com.at2024.redis7_study.entities.Customer"
             parameterType="java.lang.Integer">
         SELECT id, cname, age, phone, sex, birth
-        FROM customer
+        FROM t_customer
         WHERE id = #{id,jdbcType=INTEGER}
     </select>
 </mapper>
