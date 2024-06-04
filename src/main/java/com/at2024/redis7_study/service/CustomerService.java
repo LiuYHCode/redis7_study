@@ -2,6 +2,7 @@ package com.at2024.redis7_study.service;
 
 import com.at2024.redis7_study.entities.Customer;
 import com.at2024.redis7_study.mapper.CustomerMapper;
+import com.at2024.redis7_study.utils.CheckBloomFilterUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,6 +23,8 @@ public class CustomerService {
     private CustomerMapper customerMapper;
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private CheckBloomFilterUtils checkBloomFilterUtils;
 
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -41,6 +44,42 @@ public class CustomerService {
         Customer customer = null;
         //redis缓存key
         String key = CACHE_KEY_CUSTOMER + id;
+        //先从redis中取，查看redis中是否存在
+        customer = (Customer) redisTemplate.opsForHash().get("customer:", key);
+
+        //redis不存在，去mysql中查找
+        if (null == customer) {
+            // 双端加锁策略
+            synchronized (CustomerService.class) {
+                customer = (Customer) redisTemplate.opsForHash().get("customer:", key);
+                if (null == customer) {
+                    //mysql中取
+                    customer = customerMapper.selectCustomerById(id);
+                    if (null == customer) {
+                        //mysql中没有数据，设置一个空值到redis，避免缓存穿透
+                        addCustomerWithDelayedDeletion(key, customer);
+                    } else {
+                        //mysql取到数据，写进redis
+                        redisTemplate.opsForHash().put("customer:", key, customer);
+                    }
+                }
+            }
+        }
+        return customer;
+    }
+
+    public Customer findCustomerByIdWithBloomFilter(Integer id) {
+        Customer customer = null;
+        //redis缓存key
+        String key = CACHE_KEY_CUSTOMER + id;
+
+        //================= 新加一层布隆过滤器的检查 =====================
+        if (!checkBloomFilterUtils.checkWithBloomFilter("whitelistCustomer", key)) {
+            log.info("白名单无此顾客，不可以访问，{}", key);
+            return null;
+        }
+        //================= 新加一层布隆过滤器的检查 =====================
+
         //先从redis中取，查看redis中是否存在
         customer = (Customer) redisTemplate.opsForHash().get("customer:", key);
 

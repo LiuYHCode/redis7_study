@@ -6,10 +6,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -49,5 +46,11 @@ public class CustomerController {
     @GetMapping(value = "/{id}")
     public Customer getCustomerById(@PathVariable int id) {
         return customerService.getCustomerById(id);
+    }
+
+    @ApiOperation("BloomFilter, 单个customer查询操作")
+    @GetMapping(value = "/customerBloomFilter/{id}")
+    public Customer findCustomerByIdWithBloomFilter(@PathVariable int id) {
+        return customerService.findCustomerByIdWithBloomFilter(id);
     }
 }
