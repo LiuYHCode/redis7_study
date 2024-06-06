@@ -25,7 +25,7 @@
         <sqlMapGenerator targetPackage="${package.name}.mapper" targetProject="src/main/java" />
         <javaClientGenerator targetPackage="${package.name}.mapper" targetProject="src/main/java" type="XMLMAPPER" />
 
-        <table tableName="t_customer" domainObjectName="Customer">
+        <table tableName="t_product" domainObjectName="Product">
             <generatedKey column="id" sqlStatement="JDBC"/>
         </table>
     </context>
