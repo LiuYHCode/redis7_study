@@ -11,12 +11,15 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class JHSTaskService {
 
     public static final String JHS_KEY = "jhs";
+    public static final String JHS_KEY_A = "jhs:a";
+    public static final String JHS_KEY_B = "jhs:b";
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -50,8 +53,32 @@ public class JHSTaskService {
                 e.printStackTrace();
             }
         }, "t1").start();
+    }
 
+    //双缓存策略
+    @PostConstruct
+    public void initJHSAB() {
+        log.info("模拟定时任务从数据库中不断获取参加聚划算的商品");
+        //1.用多线程模拟定时任务，将商品从数据库刷新到redis
+        new Thread(() -> {
+            //2.模拟从数据库查询数据
+            List<Product> productList = getProductsFromMysql();
+            //3.先更新B缓存且让B缓存过期时间超过A缓存，如果突然失效还有B兜底，防止击穿
+            redisTemplate.delete(JHS_KEY_B);
+            redisTemplate.opsForList().leftPushAll(JHS_KEY_B, productList);
+            //设置过期时间为1天+10秒
+            redisTemplate.expire(JHS_KEY_B, 86410L, TimeUnit.SECONDS);
 
-
+            // 4 在更新缓存A
+            redisTemplate.delete(JHS_KEY_A);
+            redisTemplate.opsForList().leftPushAll(JHS_KEY_A, productList);
+            redisTemplate.expire(JHS_KEY_A, 86400L, TimeUnit.SECONDS);
+            //5暂停1分钟，模拟聚划算参加商品下架上新等操作
+            try {
+                Thread.sleep(60000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, "t2").start();
     }
 }
