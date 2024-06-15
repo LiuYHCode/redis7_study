@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.at2024</groupId>
-    <artifactId>redis_distributed_lock2</artifactId>
+    <artifactId>redis_distributed_lock3</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>redis_distributed_lock2</name>
+    <name>redis_distributed_lock3</name>
     <description>Demo project for Spring Boot</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
