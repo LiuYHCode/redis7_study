@@ -1,0 +1,30 @@
+package com.at2024.redislock.mylock;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.locks.Lock;
+
+@Component
+public class DistributedLockFactory {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    public Lock getDistributedLock(String lockType, String lockName) {
+        if (lockType == null) {
+            return null;
+        }
+
+        if ("REDIS".equalsIgnoreCase(lockType)) {
+            return new RedisDistributedLock(stringRedisTemplate, lockName);
+        } else if ("ZOOKEEPER".equalsIgnoreCase(lockType)) {
+            // 后面存在就返回对应的分布式锁
+        } else if ("MYSQL".equalsIgnoreCase(lockType)) {
+            // 后面存在就返回对应的分布式锁
+        }
+
+        return null;
+    }
+}
