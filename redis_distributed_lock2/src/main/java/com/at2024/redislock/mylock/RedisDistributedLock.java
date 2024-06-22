@@ -6,6 +6,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -24,10 +26,10 @@ public class RedisDistributedLock implements Lock {
     private String uuidValule; // ARGV[1]
     private long expireTime; // ARGV[2]
 
-    public RedisDistributedLock(StringRedisTemplate stringRedisTemplate, String lockName) {
+    public RedisDistributedLock(StringRedisTemplate stringRedisTemplate, String lockName, String uuid) {
         this.stringRedisTemplate = stringRedisTemplate;
         this.lockName = lockName;
-        this.uuidValule = IdUtil.simpleUUID() + ":" + Thread.currentThread().getId();
+        this.uuidValule = uuid + ":" + Thread.currentThread().getId();
         this.expireTime = 500L;
     }
 
@@ -66,9 +68,35 @@ public class RedisDistributedLock implements Lock {
                 // 休眠60毫秒再来重试
                 try {TimeUnit.MILLISECONDS.sleep(60);} catch (InterruptedException e) {e.printStackTrace();}
             }
+            //新建一个后台扫描程序，来检查Key目前的ttl，是否到我们规定的剩余时间来实现锁续期
+            resetExpire();
             return true;
         }
         return false;
+    }
+
+    //自动续期
+    private void resetExpire() {
+        String script =
+            "if redis.call('hexists', KEYS[1], ARGV[1]) == 1 then " +
+            "return redis.call('expire', KEYS[1], ARGV[2]) " +
+            "else " +
+            "return 0 " +
+            "end";
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (stringRedisTemplate.execute(
+                    new DefaultRedisScript<>(script, Boolean.class),
+                    Arrays.asList(lockName),
+                    uuidValule,
+                    String.valueOf(expireTime))) {
+                    // 续期成功，继续监听
+                    log.info("resetExpire() lockName:" + lockName + "\t" + "uuidValue:" + uuidValule);
+                    resetExpire();
+                }
+            }
+        }, this.expireTime * 1000 / 3);
     }
 
     @Override
