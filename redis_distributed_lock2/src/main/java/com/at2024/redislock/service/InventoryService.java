@@ -2,15 +2,15 @@ package com.at2024.redislock.service;
 
 import cn.hutool.core.util.IdUtil;
 import com.at2024.redislock.mylock.DistributedLockFactory;
-import com.at2024.redislock.mylock.RedisDistributedLock;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -335,6 +335,37 @@ public class InventoryService {
         }
         return resMessgae;
     }
+
+    @Autowired
+    private Redisson redisson;
+    public String saleByRedisson()
+    {
+        String retMessage = "";
+
+        RLock redissonLock = redisson.getLock("lyhRedisLock");
+        redissonLock.lock();
+        try {
+            //1 查询库存信息
+            String result = stringRedisTemplate.opsForValue().get("inventory");
+            //2 判断库存是否足够
+            Integer inventoryNumber = result == null ? 0 : Integer.parseInt(result);
+            //3 扣减库存，每次减少一个
+            if(inventoryNumber > 0) {
+                stringRedisTemplate.opsForValue().set("inventory",String.valueOf(--inventoryNumber));
+                retMessage = "成功卖出一个商品,库存剩余:"+inventoryNumber;
+                log.info(retMessage+"\t"+"服务端口号"+port);
+            } else {
+                retMessage = "商品卖完了,o(╥﹏╥)o";
+            }
+        } finally {
+            //改进点，只能删除属于自己的key，不能删除别人的
+            if(redissonLock.isLocked() && redissonLock.isHeldByCurrentThread()) {
+                redissonLock.unlock();
+            }
+        }
+        return retMessage+"\t"+"服务端口号"+port;
+    }
+
 
     private void testReEntry() {
         Lock redisLock = distributedLockFactory.getDistributedLock("REDIS", "lyhRedisLock");

@@ -18,4 +18,10 @@ public class InventoryController {
     public String sale() {
         return inventoryService.sale();
     }
+
+    @GetMapping("/inventory/saleByRedisson")
+    @ApiOperation("RedLock使用")
+    public String saleByRedisson() {
+        return inventoryService.saleByRedisson();
+    }
 }

@@ -11,6 +11,8 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.redisson.Redisson;
+import org.redisson.config.Config;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
@@ -81,5 +83,14 @@ public class RedisConfig {
         // 设置自定义时间模块
         objectMapper.registerModule(timeModule);
         return new GenericJackson2JsonRedisSerializer(objectMapper);
+    }
+
+    //单Redis节点模式
+    @Bean
+    public Redisson redisson()
+    {
+        Config config = new Config();
+        config.useSingleServer().setAddress("redis://192.168.0.132:6379").setDatabase(0).setPassword("aaa111");
+        return (Redisson) Redisson.create(config);
     }
 }
