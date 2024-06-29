@@ -23,7 +23,6 @@ public class CacheConfiguration {
         node = node.startsWith("redis://") ? node : "redis://" + node;
         SingleServerConfig serverConfig = config.useSingleServer()
                 .setAddress(node)
-                .setDatabase(0)
                 .setTimeout(redisProperties.getPool().getConnTimeout())
                 .setConnectionPoolSize(redisProperties.getPool().getSize())
                 .setConnectionMinimumIdleSize(redisProperties.getPool().getMinIdle());
@@ -39,7 +38,6 @@ public class CacheConfiguration {
         node = node.startsWith("redis://") ? node : "redis://" + node;
         SingleServerConfig serverConfig = config.useSingleServer()
                 .setAddress(node)
-                .setDatabase(0)
                 .setTimeout(redisProperties.getPool().getConnTimeout())
                 .setConnectionPoolSize(redisProperties.getPool().getSize())
                 .setConnectionMinimumIdleSize(redisProperties.getPool().getMinIdle());
@@ -56,7 +54,6 @@ public class CacheConfiguration {
         node = node.startsWith("redis://") ? node : "redis://" + node;
         SingleServerConfig serverConfig = config.useSingleServer()
                 .setAddress(node)
-                .setDatabase(0)
                 .setTimeout(redisProperties.getPool().getConnTimeout())
                 .setConnectionPoolSize(redisProperties.getPool().getSize())
                 .setConnectionMinimumIdleSize(redisProperties.getPool().getMinIdle());

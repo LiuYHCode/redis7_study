@@ -1,18 +1,12 @@
-package com.at2024.redis_redlock;
+package com.at2024.redis_redlock.controller;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = RedisRedLockApplication.class)
-public class RedLockTest {
-    @Test
-    public void guavaWithBloomFilterTest() {
+public class RediConn {
+
+    public static void main(String[] args) {
         // 创建配置对象
         Config config = new Config();
         // 指定使用单节点部署方式
